@@ -96,7 +96,7 @@ export default async function RootLayout({ children }) {
 
           <footer className="border-t bg-white">
             <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-stone-500">
-              © {new Date().getFullYear()} Addis Eats · Bole, Addis Ababa
+              © 2026 Addis Eats · Bole, Addis Ababa Ethiopia
             </div>
           </footer>
         </Providers>

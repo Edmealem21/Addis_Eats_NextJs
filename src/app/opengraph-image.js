@@ -1,6 +1,6 @@
 // src/app/opengraph-image.jsx
 import { ImageResponse } from "next/og";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_HOST } from "@/lib/site";
 
 export const alt = `${SITE_NAME} — Authentic Ethiopian Food`;
 export const size = { width: 1200, height: 630 };
@@ -38,7 +38,7 @@ export default async function Image() {
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 28, opacity: 0.85 }}>
           <span>injera · tibs · shiro · doro wat</span>
-          <span>addis-eats.vercel.app</span>
+          <span>{SITE_HOST}</span>
         </div>
       </div>
     ),

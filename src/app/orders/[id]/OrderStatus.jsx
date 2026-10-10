@@ -1,5 +1,5 @@
-// src/app/orders/[id]/OrderStatus.jsx
 "use client";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 
@@ -20,6 +20,11 @@ export default function OrderStatus({ id, fallbackData }) {
     keepPreviousData: true,
   });
 
+  // Only render the timestamp after hydration — avoids a server/client mismatch
+  // because the server has no reliable "now" for the user's timezone.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   if (!data && error) {
     return (
       <div className="rounded border border-red-300 bg-red-50 p-4 text-red-700">
@@ -36,39 +41,14 @@ export default function OrderStatus({ id, fallbackData }) {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <p className="rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800">
-          Showing the last known state — live updates paused.
-        </p>
-      )}
-
-      <ol className="space-y-3">
-        {STEPS.map((step, i) => {
-          const reached = i <= safeStep;
-          return (
-            <li key={step} className="flex items-center gap-3">
-              <span className={`grid h-6 w-6 place-items-center rounded-full text-xs ${
-                reached ? "bg-amber-600 text-white" : "border border-stone-300 bg-white text-stone-400"
-              }`}>{i + 1}</span>
-              <span className={reached ? "font-medium" : "text-stone-500"}>{LABELS[step]}</span>
-            </li>
-          );
-        })}
-      </ol>
-
-      <dl className="space-y-1 rounded border bg-white p-4">
-        <div className="flex justify-between">
-          <dt className="text-stone-600">Items</dt>
-          <dd>{order.items?.length ?? 0}</dd>
-        </div>
-        <div className="flex justify-between">
-          <dt className="text-stone-600">Total</dt>
-          <dd className="font-medium">{order.total ?? "—"} ETB</dd>
-        </div>
-      </dl>
+      {/* ...steps and totals... */}
 
       <p className="h-4 text-xs text-stone-400" aria-live="polite">
-        {isValidating ? "Refreshing…" : `Updated ${new Date().toLocaleTimeString()}`}
+        {!mounted
+          ? ""
+          : isValidating
+            ? "Refreshing…"
+            : `Updated ${new Date().toLocaleTimeString()}`}
       </p>
     </div>
   );

@@ -22,21 +22,21 @@ export default async function OrdersPage() {
       {orders.length === 0 ? (
         <p className="text-stone-600">You don&apos;t have any orders yet.</p>
       ) : (
-        <ul className="divide-y rounded border bg-white">
-          {orders.map((o) => (
-            <li key={o.id} className="flex items-center justify-between p-4">
-              <div>
-                <Link href={`/orders/${o.id}`} className="font-mono text-sm hover:text-amber-700">
-                  {o.id}
-                </Link>
-                <p className="text-xs text-stone-500">
-                  {new Date(o.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <span className="text-sm font-medium">{o.total} ETB</span>
-            </li>
-          ))}
-        </ul>
+          <ul className="divide-y rounded border bg-white">
+            {orders.map((o) => (
+              <li key={o.id} className="flex items-center justify-between p-4">
+                <div>
+                  <Link href={`/orders/${o.id}`} className="font-mono text-sm hover:text-amber-700">
+                    {o.id}
+                  </Link>
+                  <p className="text-xs text-stone-500">
+                    {o.createdAt.slice(0, 10)} · {o.createdAt.slice(11, 16)}
+                  </p>
+                </div>
+                <span className="text-sm font-medium">{o.total} ETB</span>
+              </li>
+            ))}
+          </ul>
       )}
 
       <Link href="/menu" className="text-amber-700 underline">← Back to menu</Link>
