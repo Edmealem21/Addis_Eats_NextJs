@@ -14,16 +14,16 @@ export const dishes = [
     image: "/dishes/tibs.jpg" },
   { id: "misir-wot", name: "Misir Wot", category: "Veg", price: 200,
     description: "Red lentil stew simmered in berbere and onions.",
-    image: "/dishes/shiro.jpg" },
+    image: "/dishes/misir-wat.jpg" },
   { id: "gomen", name: "Gomen", category: "Veg", price: 190,
     description: "Collard greens cooked with garlic, ginger, and spices.",
-    image: "/dishes/shiro.jpg" },
+    image: "/dishes/gomen.jpg" },
   { id: "firfir", name: "Firfir", category: "Mains", price: 250,
     description: "Shredded injera tossed in spicy berbere sauce.",
-    image: "/dishes/tibs.jpg" },
+    image: "/dishes/firfir.jpg" },
   { id: "beyaynetu", name: "Beyaynetu", category: "Veg", price: 260,
     description: "A combination platter of vegetarian stews on injera.",
-    image: "/dishes/shiro.jpg" },
+    image: "/dishes/beyaynet.jpg" },
 ];
 
 export async function getDishes() { return dishes; }
