@@ -1,40 +1,29 @@
 // src/app/menu/[id]/opengraph-image.jsx
 import { ImageResponse } from "next/og";
-import fs from "fs/promises";
-import path from "path";
 import { getDish } from "@/lib/dishes";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
-// Force the Node runtime — `fs` is not available on the Edge runtime.
 export const runtime = "nodejs";
-
 export const alt = "Dish from Addis Eats";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Read the dish photo from /public and return it as a base64 data URL.
-// Doing this instead of fetching the image over HTTP avoids the
-// "self-fetch times out on cold start" failure you saw on Vercel.
-async function loadImageAsDataUrl(publicPath) {
+// Fetch the dish photo from the public CDN and return a data URL.
+// We can't use fs.readFile here — public/ files aren't copied into
+// the serverless function bundle on Vercel.
+async function fetchImageAsDataUrl(publicPath) {
   try {
-    // publicPath is like "/dishes/kitfo.jpg". Strip the leading "/"
-    // and join it to <project>/public.
-    const relative = publicPath.replace(/^\/+/, "");
-    const filePath = path.join(process.cwd(), "public", relative);
-    const buffer = await fs.readFile(filePath);
-
-    const ext = path.extname(filePath).toLowerCase();
-    const mime =
-      ext === ".png"  ? "image/png"  :
-      ext === ".webp" ? "image/webp" :
-      ext === ".avif" ? "image/avif" :
-      ext === ".gif"  ? "image/gif"  :
-                        "image/jpeg";
-
+    const url = `${SITE_URL}${publicPath}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.error("OG image fetch failed:", res.status, url);
+      return null;
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const mime = res.headers.get("content-type") ?? "image/jpeg";
     return `data:${mime};base64,${buffer.toString("base64")}`;
   } catch (err) {
-    // File not found — the card will render without a photo.
-    console.error("OG image: could not read", publicPath, err?.message);
+    console.error("OG image fetch error:", err?.message);
     return null;
   }
 }
@@ -43,7 +32,6 @@ export default async function Image({ params }) {
   const { id } = await params;
   const dish = await getDish(id);
 
-  // Fallback card when the dish id doesn't exist.
   if (!dish) {
     return new ImageResponse(
       (
@@ -67,8 +55,7 @@ export default async function Image({ params }) {
     );
   }
 
-  // Load the dish photo from disk → base64 data URL. No network.
-  const imageDataUrl = await loadImageAsDataUrl(dish.image);
+  const imageDataUrl = await fetchImageAsDataUrl(dish.image);
 
   return new ImageResponse(
     (
@@ -82,7 +69,6 @@ export default async function Image({ params }) {
           fontFamily: "sans-serif",
         }}
       >
-        {/* ── Left side: text ── */}
         <div
           style={{
             flex: 1,
@@ -142,8 +128,7 @@ export default async function Image({ params }) {
           </div>
         </div>
 
-        {/* ── Right side: dish photo ── */}
-        {imageDataUrl ? (
+        {imageDataUrl && (
           <div
             style={{
               width: 520,
@@ -156,31 +141,8 @@ export default async function Image({ params }) {
             <img
               src={imageDataUrl}
               alt={dish.name}
-              width={520}
-              height={630}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
-          </div>
-        ) : (
-          // No photo available — show a placeholder block with the
-          // dish name so the card still looks intentional.
-          <div
-            style={{
-              width: 520,
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#292524",
-              color: "#78716c",
-              fontSize: 28,
-            }}
-          >
-            {dish.category}
           </div>
         )}
       </div>
