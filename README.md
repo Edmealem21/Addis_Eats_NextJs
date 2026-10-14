@@ -1,44 +1,42 @@
 # Addis Eats
 
-A full-stack Ethiopian food-ordering app on the Next.js App Router.
+A full-stack Ethiopian food-ordering app built on the Next.js App Router.
 
-**Live:** https://addis-eats.vercel.app
+**Live:** https://addis-eats-next-js.vercel.app
 
-## Features
+## What it does
 
-- Menu with search, category filter, paging
-- Cart with shared context across routes
-- Checkout via validated Server Action
-- Order tracking with live polling (SWR)
-- HMAC-signed httpOnly session cookies
-- Middleware + page + action protection
-- Staff-only `/kitchen`
-- Self-hosted fonts, `next/image`, `next/script`
-- Full metadata, JSON-LD, sitemap, robots
+- Browse the menu — search, filter, and page through dishes
+- Add dishes to a cart, place an order with a validated form
+- Track an order in real time on a map with live status updates
+- Staff dashboard with revenue and order charts
+- CSV export of order history
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS 4 |
+| Data | SWR, Zod |
+| Backend | Route Handlers + Server Actions |
+| Auth | HMAC-signed httpOnly cookies |
+| Maps | Leaflet, react-leaflet |
+| Images | `next/image` with AVIF/WebP |
 
 ## Run locally
 
-    git clone https://github.com/<you>/addis-eats
-    cd addis-eats
-    cp .env.example .env.local
-    npm install
-    npm run dev
+```bash
+# 1. Clone
+git clone https://github.com/IBT-Qiyas-Full-Stack-Academy/sq6-edmealem-getnet
+cd <repo>
 
-Open http://localhost:3000
+# 2. Copy env and edit
+cp .env.example .env.local
+#   SESSION_SECRET: any long random string
+#     generate: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+#   NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
-## Demo accounts
-
-| Email | Password | Role |
-|---|---|---|
-| almaz@example.com | password1 | Customer |
-| kebede@example.com | password2 | Customer |
-| chef@addiseats.com | kitchen1 | Staff |
-
-## Documentation
-
-- `AUTH.md` — layers, attacks, and what each layer proves
-- `DATA.md` — every query, key, refresh rule
-- `PERF.md` — Lighthouse before/after with causes
-- `SEO.md` — metadata hierarchy, JSON-LD, sitemap
-- `STRATEGY.md` — rendering strategy per route
-- `BOUNDARY.md` — server/client placement
+# 3. Install and run
+npm install
+npm run dev

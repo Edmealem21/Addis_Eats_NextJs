@@ -2,29 +2,35 @@
 
 ## Shared fetcher
 
-`src/lib/fetcher.js` — one function, used by every `useSWR` call. Throws on non-OK responses with `err.status` attached.
+`src/lib/fetcher.js` — throws on non-OK responses so SWR populates `error`.
 
 ## Every query
 
-| Data | Server or Client | Key / source | Refresh rule | Reasoning |
+| Data | Side | Key / source | Refresh rule | Reasoning |
 |---|---|---|---|---|
-| Menu (initial page) | **Server** | `getDishes()` from `lib/dishes.js` | revalidate 60s | Public, cacheable, indexable. Seeded as `fallbackData`. |
-| Menu (client navigation) | **Client** | `/api/dishes?page=${n}` | none | Search/paging is user-triggered. Catalog stable; CDN caches 60s. |
-| Menu search | **Client** | `/api/dishes?q=${term}&page=${n}` | none; debounced 300ms | Only fires when user types. `null` key when term empty. |
-| Dish detail | **Server** | `getDish(id)` | SSG via `generateStaticParams` | Prerendered at build; refreshed every 60s. |
-| Order status | **Client** | `/api/orders/${id}` | `refreshInterval: 5000` | Live data. Server seeds first paint via `fallbackData`. |
-| Order history | **Server** | `listOrdersForUser(session.userId)` | per-request | Private, scoped to session. No client fetch. |
-| Cart contents | **Client** | React context | — | Never leaves the browser until checkout. |
+| Menu (initial) | Server | `getDishes()` | revalidate 60s | Public, cacheable, indexable. Seeded as `fallbackData`. |
+| Menu (client nav) | Client | `/api/dishes?page=${n}` | none | Paging is user-triggered; catalog is stable. |
+| Menu search | Client | `/api/dishes?q=${term}&page=${n}` | none; debounced 300ms | Null key when term is empty — SWR skips the request. |
+| Dish detail | Server | `getDish(id)` | SSG via `generateStaticParams` | Prerendered at build. |
+| Order status page | Server | `getOrder(id)` | per-request | Ownership check needs the session. |
+| Order status (poll) | Client | `/api/orders/${id}` | `refreshInterval: 5000` | Live data. Seeded with `fallbackData`. |
+| Order status (stream) | Client | `/api/orders/${id}/stream` (SSE) | live | Server pushes status changes; client closes on delivery. |
+| Order history | Server | `listOrdersForUser(session.userId)` | per-request | Private, scoped to session. |
+| CSV export | Client | `/api/orders/export` | on click | Fresh CSV every time. |
+| Dashboard data | Server | `listAllOrders()` + aggregations | per-request | Aggregated on the server; only summaries cross to the client. |
+| Cart contents | Client | React context | — | Never leaves the browser until checkout. |
 
-## Server → client seeding (the "no spinner" rule)
+## Server → client seeding
 
-- `/menu` → `MenuBrowser` receives `fallbackData` from the server page.
-- `/orders/[id]` → `OrderStatus` receives `fallbackData` from the server page.
+- `/menu` → `MenuBrowser` gets `fallbackData` from the server page.
+- `/orders/[id]` → `OrderStatus` gets `fallbackData` from the server page.
+- `/track/[id]` → `TrackingView` gets `initialStatus` and coordinates.
 
-In both cases the user sees real data on first paint. The SWR fetch is a refresh, not the initial load.
+In all three cases, the user sees real content on first paint. The fetch is
+a refresh, not the initial load.
 
 ## What is NOT polled
 
-- Dishes — stable data; caching headers handle freshness.
+- Dishes — stable; cache headers handle freshness.
 - Cart — client-only.
-- Order history — server-rendered per request; no client fetch needed.
+- Order history — server-rendered per request.

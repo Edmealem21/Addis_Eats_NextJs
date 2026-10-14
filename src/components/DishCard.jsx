@@ -1,4 +1,3 @@
-// src/components/DishCard.jsx
 import Link from "next/link";
 import Image from "next/image";
 
@@ -13,6 +12,7 @@ export default function DishCard({ dish, priority = false }) {
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={priority}
+            quality={70}
             className="object-cover transition duration-300 group-hover:scale-105"
           />
         </div>

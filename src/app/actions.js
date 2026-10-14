@@ -7,6 +7,7 @@ import { orderSchema } from "@/lib/schema";
 import { addOrder, newOrderId, getOrder, deleteOrder } from "@/lib/orders";
 import { findUserByCredentials } from "@/lib/users";
 import { getSession, createSession, destroySession } from "@/lib/session";
+import { getDish } from "@/lib/dishes";
 
 function safeNext(value) {
   if (typeof value !== "string") return "/";
@@ -58,16 +59,31 @@ export async function placeOrder(_prevState, formData) {
     };
   }
 
-  const total = parsed.data.items.reduce((sum, i) => sum + i.quantity * 100, 0);
+ // update 
+const total = (
+  await Promise.all(
+    parsed.data.items.map(async (i) => {
+      const dish = await getDish(i.id);
+      const unitPrice = dish?.price ?? 0;
+      return unitPrice * i.quantity;
+    })
+  )
+).reduce((sum, n) => sum + n, 0);
 
-  const order = addOrder({
-    id: newOrderId(),
-    userId: session.userId,
-    createdAt: new Date().toISOString(),
-    status: "pending",
-    total,
-    ...parsed.data,
-  });
+// Derive a neighbourhood label from the address (first comma-separated part).
+const addr = String(parsed.data.address ?? "");
+const neighbourhood =
+  addr.split(",")[0].trim() || "Unknown";
+
+const order = addOrder({
+  id: newOrderId(),
+  userId: session.userId,
+  createdAt: new Date().toISOString(),
+  status: "pending",
+  total,
+  neighbourhood,
+  ...parsed.data,
+});
 
   revalidatePath("/checkout");
   revalidatePath("/orders");

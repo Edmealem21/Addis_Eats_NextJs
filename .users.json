@@ -1,0 +1,26 @@
+[
+  {
+    "id": "user-1",
+    "email": "almaz@example.com",
+    "password": "password1",
+    "name": "Almaz",
+    "role": "customer",
+    "active": true
+  },
+  {
+    "id": "user-2",
+    "email": "kebede@example.com",
+    "password": "password2",
+    "name": "Kebede",
+    "role": "customer",
+    "active": true
+  },
+  {
+    "id": "staff-1",
+    "email": "chef@addiseats.com",
+    "password": "kitchen1",
+    "name": "Chef Selam",
+    "role": "staff",
+    "active": true
+  }
+]

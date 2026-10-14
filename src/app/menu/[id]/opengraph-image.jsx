@@ -1,29 +1,35 @@
 // src/app/menu/[id]/opengraph-image.jsx
 import { ImageResponse } from "next/og";
+import fs from "fs/promises";
+import path from "path";
 import { getDish } from "@/lib/dishes";
-import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const alt = "Dish from Addis Eats";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Fetch the dish photo from the public CDN and return a data URL.
-// We can't use fs.readFile here — public/ files aren't copied into
-// the serverless function bundle on Vercel.
-async function fetchImageAsDataUrl(publicPath) {
+// Read the dish photo from /public/dishes/ as a base64 data URL.
+// Reading from disk avoids the self-fetch deadlock you saw in dev mode.
+async function loadImageAsDataUrl(publicPath) {
   try {
-    const url = `${SITE_URL}${publicPath}`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) {
-      console.error("OG image fetch failed:", res.status, url);
-      return null;
-    }
-    const buffer = Buffer.from(await res.arrayBuffer());
-    const mime = res.headers.get("content-type") ?? "image/jpeg";
+    // publicPath is like "/dishes/kitfo.jpg". Strip the leading "/"
+    // and join it to <project>/public.
+    const relative = publicPath.replace(/^\/+/, "");
+    const filePath = path.join(process.cwd(), "public", relative);
+    const buffer = await fs.readFile(filePath);
+
+    const ext = path.extname(filePath).toLowerCase();
+    const mime =
+      ext === ".png"  ? "image/png"  :
+      ext === ".webp" ? "image/webp" :
+      ext === ".avif" ? "image/avif" :
+                        "image/jpeg";
+
     return `data:${mime};base64,${buffer.toString("base64")}`;
   } catch (err) {
-    console.error("OG image fetch error:", err?.message);
+    console.error("OG image load error:", err?.message);
     return null;
   }
 }
@@ -55,7 +61,7 @@ export default async function Image({ params }) {
     );
   }
 
-  const imageDataUrl = await fetchImageAsDataUrl(dish.image);
+  const imageDataUrl = await loadImageAsDataUrl(dish.image);
 
   return new ImageResponse(
     (

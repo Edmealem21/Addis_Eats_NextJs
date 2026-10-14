@@ -66,37 +66,60 @@ export default async function RootLayout({ children }) {
       <body className={`${inter.className} min-h-screen bg-stone-50 text-stone-900 flex flex-col`}>
         <Providers>
           <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-            <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-4">
-              <Link href="/" className="font-bold text-amber-700">Addis Eats</Link>
+<div className="flex items-center justify-between gap-6 px-6 py-4">
+  {/* ── LEFT: logo ── */}
+  <Link
+    href="/"
+    className="shrink-0 font-bold text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+  >
+    Addis Eats
+  </Link>
 
-              <nav className="hidden md:flex items-center gap-6">
-                <Link href="/menu" className="hover:text-amber-700">Menu</Link>
-                <CartButton />
-                <Link href="/orders" className="hover:text-amber-700">My Orders</Link>
-                <Link href="/checkout" className="hover:text-amber-700">Checkout</Link>
-                {session?.role === "staff" && (
-                  <Link href="/kitchen" className="hover:text-amber-700">Kitchen</Link>
-                )}
-              </nav>
+  {/* ── CENTER: nav takes all remaining space, centers its contents ── */}
+  <nav className="hidden flex-1 items-center justify-center gap-6 md:flex">
+    <Link href="/menu" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+      Menu
+    </Link>
+    <CartButton />
+    <Link href="/orders" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+      My Orders
+    </Link>
+    <Link href="/checkout" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+      Checkout
+    </Link>
+    <Link href="/admin" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+      Admin
+    </Link>
+    {session?.role === "staff" && (
+      <Link href="/kitchen" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+        Kitchen
+      </Link>
+    )}
+  </nav>
 
-              <div className="ml-auto flex items-center gap-3">
-                <div className="hidden md:block">
-                  {session ? <SignOutButton /> : (
-                    <Link href="/signin" className="text-amber-700">Sign in</Link>
-                  )}
-                </div>
-                <MobileNav session={session} />
-              </div>
-            </div>
+  {/* ── RIGHT: sign in/out + mobile nav ── */}
+  <div className="flex shrink-0 items-center justify-end gap-3">
+    <div className="hidden md:block">
+      {session ? (
+        <SignOutButton />
+      ) : (
+        <Link href="/signin" className="text-amber-700">
+          Sign in
+        </Link>
+      )}
+    </div>
+    <MobileNav session={session} />
+  </div>
+</div>
           </header>
 
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+          <main className="mx-auto w-full  flex-1 px-4 py-8">
             {children}
           </main>
 
           <footer className="border-t bg-white">
-            <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-stone-500">
-              © 2026 Addis Eats · Bole, Addis Ababa Ethiopia
+            <div className="mx-auto px-4 py-6 text-sm text-stone-500">
+              © 2026 Addis Eats · Bole, Addis Ababa
             </div>
           </footer>
         </Providers>

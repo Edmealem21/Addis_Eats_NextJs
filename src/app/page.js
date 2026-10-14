@@ -21,37 +21,53 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12">
-      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-red-700 text-white">
-        <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2 md:items-center md:p-6">
-          <div className="space-y-3">
-            <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
-              Authentic Ethiopian food, delivered hot.
-            </h1>
-            <p className="max-w-md text-sm text-amber-50/90">
-              Injera, tibs, shiro and more — sent to your door.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/menu" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-amber-700 shadow hover:bg-amber-50">
-                Order now
-              </Link>
-              <Link href="/menu?category=veg" className="rounded-lg border border-white/40 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
-                Vegetarian
-              </Link>
-            </div>
-          </div>
+<section className="relative overflow-hidden rounded-2xl text-white">
+  {/* Background image */}
+  <Image
+    src="/dishes/kitfo.jpg"
+    alt=""
+    fill
+    sizes="100vw"
+    priority
+    className="object-cover"
+    aria-hidden="true"
+  />
 
-          <div className="relative hidden aspect-[16/9] w-full overflow-hidden rounded-xl">
-            <Image
-              src={special.image}
-              alt={`${special.name} — today's special`}
-              fill
-              sizes="(max-width: 1024px) 50vw, 400px"
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
-      </section>
+  {/* Dark gradient overlay — keeps the text readable */}
+  <div
+    aria-hidden="true"
+    className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30"
+  />
+
+  {/* Content */}
+  <div className="relative grid gap-6 p-6 sm:p-8 md:grid-cols-2 md:items-center md:p-12">
+    <div className="space-y-4">
+      <h1 className="text-3xl font-bold leading-tight sm:text-4xl">
+        Authentic Ethiopian food, delivered hot.
+      </h1>
+      <p className="max-w-md text-sm text-white/90 sm:text-base">
+        Injera, tibs, shiro and more — sent to your door.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href="/menu"
+          className="inline-block min-h-[44px] rounded-lg bg-white px-5 py-3 text-sm font-medium text-amber-700 shadow hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+        >
+          Order now
+        </Link>
+        <Link
+          href="/menu?category=veg"
+          className="inline-block min-h-[44px] rounded-lg border border-white/60 px-5 py-3 text-sm font-medium text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+        >
+          Vegetarian
+        </Link>
+      </div>
+    </div>
+
+    {/* Right side is now empty on desktop — the image is the background */}
+    {/* Remove the old image column entirely */}
+  </div>
+</section>
 
       <section className="space-y-4">
         <div className="flex items-end justify-between">

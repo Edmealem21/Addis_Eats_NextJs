@@ -71,13 +71,14 @@ export default async function DishPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="relative mx-auto aspect-[16/9] max-w-2xl overflow-hidden rounded-lg bg-stone-100">
+      <div className="relative mx-auto aspect-[16/9] max-w-md overflow-hidden rounded-lg bg-stone-100">
         <Image
           src={dish.image}
           alt={`${dish.name} served with injera`}
           fill
-          sizes="(max-width: 768px) 100vw, 672px"
+          sizes="(max-width: 768px) 100vw, 448px"
           className="object-cover"
+          quality={75}
           priority
         />
       </div>

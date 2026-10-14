@@ -2,43 +2,53 @@
 
 ## Session model
 
-- Cookie `session`: `base64(payload).HMAC-SHA256(payload)`
-- Payload: `{ userId, role }`
-- Secret: `SESSION_SECRET`
-- Flags: `httpOnly`, `secure` (prod), `sameSite=lax`, `path=/`, `maxAge=1d`
+- Cookie `session` holds `base64(payload).HMAC-SHA256(payload)`.
+- Payload: `{ userId, role }`.
+- Secret: `SESSION_SECRET` env var.
+- Cookie flags: `httpOnly`, `secure` (production), `sameSite=lax`,
+  `path=/`, `maxAge=1 day`.
 
 ## Protected routes — every layer
 
-| Route / action | Layer 1 (middleware) | Layer 2 (page/session) | Layer 3 (data/ownership) | Proves |
+| Route | Layer 1 (middleware) | Layer 2 (page) | Layer 3 (data) | Proves |
 |---|---|---|---|---|
-| `/checkout` | cookie present | `getSession()` verifies signature | `placeOrder` derives `userId` from session | Signed-in + write not forged |
-| `/orders` | cookie present | `getSession()` | `listOrdersForUser(session.userId)` | Only own orders returned |
-| `/orders/[id]` | cookie present | `getSession()` | `order.userId === session.userId` else `notFound()` | Cross-account read impossible |
-| `/kitchen` | — | `getSession()` | `session.role === "staff"` else redirect | Role enforced server-side |
-| `POST /api/orders` | — | `getSession()` | schema validation | 401 for signed-out |
-| `GET /api/orders/[id]` | — | `getSession()` | `order.userId === session.userId` else 404 | Cross-account via API impossible |
+| `/checkout` | cookie present | `getSession()` verifies signature | `placeOrder` derives `userId` from session | signed-in, write cannot be forged |
+| `/orders` | cookie present | `getSession()` | `listOrdersForUser(session.userId)` | only own orders returned |
+| `/orders/[id]` | cookie present | `getSession()` | `order.userId === session.userId` else `notFound()` | cross-account read returns 404 |
+| `/track/[id]` | (no middleware) | `getSession()` | ownership check | cross-account track returns 404 |
+| `/dashboard` | (no middleware) | `getSession()` | (not user-scoped; staff-only) | signed-in only |
+| `/kitchen` | (no middleware) | `getSession()` | `role === "staff"` | staff-only |
+| `POST /api/orders` | (no middleware) | — | `getSession()` + schema validation | 401 for signed-out |
+| `GET /api/orders/[id]` | (no middleware) | — | `getSession()` + ownership | 401/404 |
+| `GET /api/orders/[id]/stream` | (no middleware) | — | `getSession()` + ownership | 401/404 |
+| `GET /api/orders/export` | (no middleware) | — | `getSession()` | 401 |
 
-## The three attacks and what refused them
+**Middleware matcher:** `["/checkout", "/orders", "/orders/:path*"]` — narrow by design.
+Sign-in is not matched (would loop). `/kitchen`, `/dashboard`, `/track`
+handle their own checks on the server.
 
-### Attack 1 — Cookie tampering
-**Do:** Modify one character in the `session` cookie in DevTools. Reload `/checkout`.
-**Result:** Redirected to `/signin`.
-**Which line refused it:** `verify()` in `src/lib/session.js:38` — `timingSafeEqual` on the HMAC failed, `getSession()` returned `null`, the page called `redirect("/signin?next=/checkout")`.
+## Server Actions — both checks inside every write
 
-### Attack 2 — Cross-account read
-**Do:** Sign in as `user-1`. Place an order. Note the id. Sign out. Sign in as `user-2`. Visit `/orders/<user-1-order>`.
-**Result:** 404.
-**Which line refused it:** `src/app/orders/[id]/page.js:16` — `if (order.userId !== session.userId) notFound()`. 404 (not 403) so nothing leaks.
+### `placeOrder(prevState, formData)`
 
-### Attack 3 — Open redirect
-**Do:** While signed out, visit `/signin?next=https://evil.example.com/phish`. Sign in.
-**Result:** Landed on `/`.
-**Which line refused it:** `safeNext()` in `src/app/signin/page.js:8` — rejects any value not starting with a single `/`.
+1. `getSession()` — reject if null.
+2. `orderSchema.safeParse(raw)` — reject on validation failure.
+3. `userId: session.userId` — **from session, never from form**.
+4. `addOrder(...)`, then `revalidatePath`.
 
-## What each layer proves (the point)
+### `cancelOrder(prevState, formData)`
 
-- **Middleware** — proves a cookie exists. Cheap. Runs on every matched request. Not sufficient alone.
-- **`getSession()` on the page** — proves the cookie signature is valid and unexpired.
-- **The query or ownership check** — proves the caller is allowed to touch **this specific record**, not just any record.
+1. `getSession()` — reject if null.
+2. Load the order — reject if not found.
+3. `if (order.userId !== session.userId)` — reject.
+4. `deleteOrder(id)`, then `revalidatePath`.
 
-A missing layer 3 is the classic vulnerability: the app knows you're signed in but not which records are yours. Every `getOrder(id)` in the codebase must be preceded by a session check **and** an ownership check.
+## `next` parameter validation
+
+```js
+function safeNext(value) {
+  if (typeof value !== "string") return "/";
+  if (!value.startsWith("/")) return "/";
+  if (value.startsWith("//")) return "/";
+  return value;
+}
