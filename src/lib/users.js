@@ -23,14 +23,20 @@ function read() {
 }
 
 function write(list) {
-  try { fs.writeFileSync(FILE, JSON.stringify(list, null, 2)); } catch {}
+  try {
+    fs.writeFileSync(FILE, JSON.stringify(list, null, 2));
+  } catch {}
 }
 
-export function getUsers() { return read(); }
-export const users = DEFAULTS;
+// All of these are synchronous — plain functions, not async.
+export function getUsers() {
+  return read();
+}
 
 export function findUserByCredentials(email, password) {
-  const u = read().find((x) => x.email === email && x.password === password);
+  const u = read().find(
+    (x) => x.email === email && x.password === password
+  );
   if (!u || u.active === false) return null;
   return u;
 }
@@ -47,3 +53,33 @@ export function toggleUserActive(id) {
   write(list);
   return list[idx];
 }
+
+export function createUser({ email, password, name, role }) {
+  const list = read();
+  const normalizedEmail = String(email).toLowerCase().trim();
+  if (list.some((u) => u.email.toLowerCase() === normalizedEmail)) {
+    throw new Error(`A user with email "${email}" already exists.`);
+  }
+  const user = {
+    id: "user-" + Math.random().toString(36).slice(2, 10),
+    email: normalizedEmail,
+    password,
+    name: name.trim(),
+    role: role === "staff" ? "staff" : "customer",
+    active: true,
+  };
+  list.push(user);
+  write(list);
+  return user;
+}
+
+export function deleteUser(id) {
+  const list = read();
+  const next = list.filter((u) => u.id !== id);
+  if (next.length === list.length) return false;
+  write(next);
+  return true;
+}
+
+// Kept for backwards compatibility with older imports.
+export const users = DEFAULTS;

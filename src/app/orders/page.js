@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { listOrdersForUser } from "@/lib/orders";
 import OrderTable from "./OrderTable";
 import ExportButton from "@/components/ExportButton";
+import AutoRefresh from "./AutoRefresh";
 
 export const metadata = {
   title: "My Orders",
@@ -46,17 +47,17 @@ export default async function OrdersPage({ searchParams }) {
   const rows = sorted.slice(start, start + PAGE_SIZE);
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-3xl space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">My Orders</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-stone-900">My Orders</h1>
           <p className="text-sm text-stone-500">
             {sorted.length} order{sorted.length === 1 ? "" : "s"}
           </p>
         </div>
         <ExportButton />
       </header>
-
+         <AutoRefresh intervalMs={15000} />     {/* ← ADD this line */}
       <OrderTable
         orders={rows}
         sort={sort}
@@ -65,9 +66,11 @@ export default async function OrdersPage({ searchParams }) {
         totalPages={totalPages}
       />
 
-      <Link href="/menu" className="text-amber-700 underline">
-        ← Back to menu
-      </Link>
+      <div className="text-center">
+        <Link href="/menu" className="text-amber-700 underline">
+          ← Back to menu
+        </Link>
+      </div>
     </section>
   );
 }

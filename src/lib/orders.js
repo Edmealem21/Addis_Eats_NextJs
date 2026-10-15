@@ -4,7 +4,7 @@ import path from "path";
 
 const FILE = path.join(process.cwd(), ".orders.json");
 
-function read() {
+function readOrders() {
   try {
     if (!fs.existsSync(FILE)) return {};
     return JSON.parse(fs.readFileSync(FILE, "utf8"));
@@ -13,28 +13,28 @@ function read() {
   }
 }
 
-function write(data) {
+function writeOrders(data) {
   try {
     fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
   } catch {}
 }
 
 export function addOrder(order) {
-  const all = read();
+  const all = readOrders();
   all[order.id] = order;
-  write(all);
+  writeOrders(all);
   return order;
 }
 
 export function getOrder(id) {
-  return read()[id] ?? null;
+  return readOrders()[id] ?? null;
 }
 
 export function deleteOrder(id) {
-  const all = read();
+  const all = readOrders();
   const existed = id in all;
   delete all[id];
-  write(all);
+  writeOrders(all);
   return existed;
 }
 
@@ -43,17 +43,23 @@ export function newOrderId() {
 }
 
 export function listOrdersForUser(userId) {
-  return Object.values(read()).filter((o) => o.userId === userId);
+  return Object.values(readOrders()).filter((o) => o.userId === userId);
 }
 
 export function listAllOrders() {
-  return Object.values(read());
+  return Object.values(readOrders());
+}
+
+export function updateOrderStatus(id, status) {
+  const all = readOrders();
+  if (!all[id]) return false;
+  all[id].status = status;
+  writeOrders(all);
+  return true;
 }
 
 export function sumTotals(predicate = () => true) {
-  return listAllOrders()
-    .filter(predicate)
-    .reduce((s, o) => s + (o.total ?? 0), 0);
+  return listAllOrders().filter(predicate).reduce((s, o) => s + (o.total ?? 0), 0);
 }
 
 export function revenueBy(keyFn) {
@@ -72,41 +78,4 @@ export function countBy(keyFn) {
     groups.set(key, (groups.get(key) ?? 0) + 1);
   }
   return Array.from(groups, ([key, value]) => ({ key, value }));
-}
-
-
-
-// src/lib/orders.js — append
-
-// export async function updateOrderStatus(id, status) {
-//   const all = read ? read() : {};
-//   const order = all[id];
-//   if (!order) return false;
-//   order.status = status;
-//   write ? write(all) : null;
-//   return true;
-// }
-
-
-function readOrders() {
-  try {
-    if (!fs.existsSync(FILE)) return {};
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
-function writeOrders(data) {
-  try {
-    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-  } catch {}
-}
-
-export async function updateOrderStatus(id, status) {
-  const all = readOrders();
-  if (!all[id]) return false;
-  all[id].status = status;
-  writeOrders(all);
-  return true;
 }

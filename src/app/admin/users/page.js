@@ -1,6 +1,8 @@
 // src/app/admin/users/page.js
+import Link from "next/link";
 import { getUsers } from "@/lib/users";
 import { toggleUserActiveAction } from "../actions";
+import DeleteUserButton from "./DeleteUserButton";
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +11,20 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-stone-900">User Management</h1>
-        <p className="text-sm text-stone-500">
-          {users.length} account{users.length === 1 ? "" : "s"}
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-wide text-stone-500">Admin</p>
+          <h1 className="text-2xl font-bold text-stone-900">User Management</h1>
+          <p className="text-sm text-stone-500">
+            {users.length} account{users.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <Link
+          href="/admin/users/new"
+          className="min-h-[44px] rounded-lg bg-[#A0522D] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B4513] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A0522D] focus-visible:ring-offset-2"
+        >
+          + Add new user
+        </Link>
       </header>
 
       <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm">
@@ -32,25 +43,38 @@ export default function AdminUsersPage() {
             {users.map((u) => {
               const active = u.active !== false;
               return (
-                <tr key={u.id} className="border-b border-stone-100 last:border-b-0 hover:bg-stone-50/50">
+                <tr
+                  key={u.id}
+                  className="border-b border-stone-100 last:border-b-0 hover:bg-stone-50/50"
+                >
                   <td className="px-4 py-3 font-medium text-stone-900">{u.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-stone-600">{u.email}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-stone-600">
+                    {u.email}
+                  </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                      u.role === "staff" ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-700"
-                    }`}>
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                        u.role === "staff"
+                          ? "bg-violet-100 text-violet-800"
+                          : "bg-stone-100 text-stone-700"
+                      }`}
+                    >
                       {u.role}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                      active ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
-                    }`}>
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                        active
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {active ? "Active" : "Disabled"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-1">
                       <form action={toggleUserActiveAction}>
                         <input type="hidden" name="id" value={u.id} />
                         <button
@@ -60,6 +84,7 @@ export default function AdminUsersPage() {
                           {active ? "Disable" : "Enable"}
                         </button>
                       </form>
+                      <DeleteUserButton id={u.id} name={u.name} />
                     </div>
                   </td>
                 </tr>
@@ -74,7 +99,12 @@ export default function AdminUsersPage() {
 
 function Th({ children, align = "left" }) {
   return (
-    <th scope="col" className={`px-4 py-3 text-xs font-medium uppercase tracking-wide text-stone-500 ${align === "right" ? "text-right" : ""}`}>
+    <th
+      scope="col"
+      className={`px-4 py-3 text-xs font-medium uppercase tracking-wide text-stone-500 ${
+        align === "right" ? "text-right" : ""
+      }`}
+    >
       {children}
     </th>
   );

@@ -5,6 +5,7 @@ import path from "path";
 const FILE = path.join(process.cwd(), ".dishes.json");
 
 const DEFAULTS = [
+  // ── Ethiopian ─────────────────────────────
   { id: "doro-wat", name: "Doro Wat", category: "Ethiopian", price: 520, rating: 4.9,
     description: "Slow-simmered chicken in berbere and niter kibbeh, served with injera.",
     image: "/dishes/doro-wat.jpg", featured: true, active: true },
@@ -26,12 +27,28 @@ const DEFAULTS = [
   { id: "firfir", name: "Firfir", category: "Ethiopian", price: 290, rating: 4.4,
     description: "Shredded injera tossed in spicy berbere sauce.",
     image: "/dishes/firfir.jpg", featured: false, active: true },
+
+  // ── Burgers ───────────────────────────────
   { id: "burger", name: "Addis Tower Burger", category: "Burgers", price: 380, rating: 4.7,
-    description: "Double beef patty, cheese, and special sauce.",
-    image: "/dishes/tibs.jpg", featured: true, active: true },
+    description: "Double beef patty, cheese, and our signature special sauce.",
+    image: "/dishes/burger.jpg", featured: true, active: true },
+  { id: "classic-burger", name: "Classic Beef Burger", category: "Burgers", price: 320, rating: 4.5,
+    description: "Juicy beef patty, lettuce, tomato, and pickles on a soft bun.",
+    image: "/dishes/classic-burger.jpg", featured: false, active: true },
+  { id: "chicken-burger", name: "Crispy Chicken Burger", category: "Burgers", price: 350, rating: 4.6,
+    description: "Breaded chicken fillet, coleslaw, and garlic aioli.",
+    image: "/dishes/chicken-burger.jpg", featured: false, active: true },
+
+  // ── Drinks ────────────────────────────────
   { id: "coffee", name: "Traditional Jebena Coffee", category: "Drinks", price: 80, rating: 5.0,
     description: "Buna brewed in a clay jebena, served in small cups.",
-    image: "/dishes/shiro.jpg", featured: true, active: true },
+    image: "/dishes/coffee.jpg", featured: true, active: true },
+  { id: "macchiato", name: "Ethiopian Macchiato", category: "Drinks", price: 90, rating: 4.8,
+    description: "Rich espresso with a touch of steamed milk — a local favorite.",
+    image: "/dishes/macchiato.jpg", featured: false, active: true },
+  { id: "spris", name: "Fresh Spris Juice", category: "Drinks", price: 150, rating: 4.7,
+    description: "Layered avocado and mango juice, blended fresh to order.",
+    image: "/dishes/juice.jpg", featured: false, active: true },
 ];
 
 function read() {
@@ -93,5 +110,4 @@ export async function resetDishes() {
   return DEFAULTS;
 }
 
-// Backwards-compat export for pages that imported the array directly.
 export const dishes = DEFAULTS;

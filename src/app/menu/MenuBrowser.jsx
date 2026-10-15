@@ -1,9 +1,11 @@
 // src/app/menu/MenuBrowser.jsx
 "use client";
+
 import { useState } from "react";
 import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import fetcher from "@/lib/fetcher";
+import CategoryFilter from "./CategoryFilter";
 import SearchBox from "./SearchBox";
 import DishList from "./DishList";
 import Pager from "./Pager";
@@ -11,25 +13,44 @@ import Pager from "./Pager";
 export default function MenuBrowser({ fallbackData, page }) {
   const searchParams = useSearchParams();
   const activePage = Number(searchParams.get("page") ?? page ?? 1);
+  const activeCategory = searchParams.get("category") ?? "All";
   const [term, setTerm] = useState("");
 
+  // Build the query string. Category always goes in; q only when there's a term.
+  const params = new URLSearchParams();
+  params.set("page", String(activePage));
+  if (activeCategory && activeCategory.toLowerCase() !== "all") {
+    params.set("category", activeCategory);
+  }
+
+  // ── Search hook ─────────────────────────────────────────────
   const searchKey = term
-    ? `/api/dishes?q=${encodeURIComponent(term)}&page=${activePage}`
+    ? `/api/dishes?${params.toString()}&q=${encodeURIComponent(term)}`
     : null;
 
   const { data: searchData, isValidating: searchValidating } = useSWR(
-    searchKey, fetcher, { keepPreviousData: true }
+    searchKey,
+    fetcher,
+    { keepPreviousData: true }
   );
 
-  const listKey = `/api/dishes?page=${activePage}`;
-  const { data: listData, error, isValidating: listValidating } = useSWR(
-    listKey, fetcher, {
-      fallbackData: activePage === Number(page) ? fallbackData : undefined,
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-      dedupingInterval: 2000,
-    }
-  );
+  // ── List hook (with category + page) ────────────────────────
+  const listKey = `/api/dishes?${params.toString()}`;
+  const {
+    data: listData,
+    error,
+    isValidating: listValidating,
+  } = useSWR(listKey, fetcher, {
+    fallbackData:
+      activePage === Number(page) &&
+      activeCategory.toLowerCase() === "all"
+        ? fallbackData
+        : undefined,
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 2000,
+  });
 
   const activeData = term ? searchData ?? listData : listData;
   const validating = searchValidating || listValidating;
@@ -45,14 +66,35 @@ export default function MenuBrowser({ fallbackData, page }) {
   const dishes = activeData?.dishes ?? [];
   const totalPages = activeData?.totalPages ?? 1;
 
-  return (
-    <div className="space-y-6">
-      <SearchBox onDebouncedChange={setTerm} />
-      <DishList dishes={dishes} />
-      <Pager page={activePage} totalPages={totalPages} />
-      <p className="h-4 text-xs text-stone-400" aria-live="polite">
-        {validating ? "Refreshing…" : ""}
-      </p>
-    </div>
-  );
+    return (
+      <div className="space-y-6">
+        {/* Centered header block: filter, search, count */}
+        <div className="mx-auto flex max-w-2xl flex-col items-center gap-4">
+          <CategoryFilter />
+
+          <div className="w-full max-w-sm">
+            <SearchBox onDebouncedChange={setTerm} onImmediateChange={setTerm} />
+          </div>
+
+          <p className="text-xs text-stone-500 text-center">
+            {activeData?.total ?? 0} dish
+            {(activeData?.total ?? 0) === 1 ? "" : "es"}
+            {activeCategory.toLowerCase() !== "all"
+              ? ` in "${activeCategory}"`
+              : ""}
+            {term ? ` matching "${term}"` : ""}
+          </p>
+        </div>
+
+        {/* Dish grid — stays full width so 4 columns fit */}
+        <DishList dishes={dishes} />
+
+        {/* Pager */}
+        <Pager page={activePage} totalPages={totalPages} />
+
+        <p className="h-4 text-xs text-stone-400 text-center" aria-live="polite">
+          {validating ? "Refreshing…" : ""}
+        </p>
+      </div>
+    );
 }

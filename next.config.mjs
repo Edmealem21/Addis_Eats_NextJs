@@ -1,4 +1,6 @@
+// next.config.mjs
 import bundleAnalyzer from "@next/bundle-analyzer";
+
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
@@ -7,6 +9,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
+
+    minimumCacheTTL: 60,
     deviceSizes: [360, 640, 828, 1080, 1200],
     imageSizes: [96, 128, 256, 384],
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],

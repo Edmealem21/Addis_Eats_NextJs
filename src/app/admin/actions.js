@@ -7,7 +7,7 @@ import { getSession } from "@/lib/session";
 import {
   createDish, updateDish, deleteDish, toggleDishActive, resetDishes,
 } from "@/lib/dishes";
-import { toggleUserActive } from "@/lib/users";
+import { toggleUserActive, createUser, deleteUser } from "@/lib/users";
 import { listAllOrders, updateOrderStatus, deleteOrder } from "@/lib/orders";
 
 const CATEGORIES = ["Ethiopian", "Burgers", "Drinks", "Veg", "Mains"];
@@ -124,12 +124,20 @@ export async function resetDishesAction() {
 
 export async function updateOrderStatusAction(formData) {
   await requireStaff();
+
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "");
+
   if (!STATUSES.includes(status)) return;
-  await updateOrderStatus(orderId, status);
+
+  const ok = await updateOrderStatus(orderId, status);
+  if (!ok) return;
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/orders");
+  revalidatePath(`/orders/${orderId}`);
+  revalidatePath("/track");
+  revalidatePath(`/track/${orderId}`);
   revalidatePath("/dashboard");
 }
 
@@ -149,5 +157,45 @@ export async function toggleUserActiveAction(formData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   toggleUserActive(id);
+  revalidatePath("/admin/users");
+}
+
+// ─────────────────────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────────────────────
+
+export async function createUserAction(_prev, formData) {
+  await requireStaff();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const role = String(formData.get("role") ?? "customer");
+
+  const fieldErrors = {};
+  if (!name || name.length < 2) fieldErrors.name = ["Name must be at least 2 characters."];
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fieldErrors.email = ["Enter a valid email address."];
+  if (!password || password.length < 6) fieldErrors.password = ["Password must be at least 6 characters."];
+  if (!["customer", "staff"].includes(role)) fieldErrors.role = ["Pick a valid role."];
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { ok: false, error: "Please fix the errors below.", fieldErrors };
+  }
+
+  try {
+    await createUser({ email, password, name, role });
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users");
+}
+
+export async function deleteUserAction(formData) {
+  await requireStaff();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await deleteUser(id);
   revalidatePath("/admin/users");
 }

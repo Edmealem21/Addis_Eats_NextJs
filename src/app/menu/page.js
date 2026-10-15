@@ -1,9 +1,9 @@
 // src/app/menu/page.js
 import MenuBrowser from "./MenuBrowser";
-import { getDishes } from "@/lib/dishes";
+import { getActiveDishes } from "@/lib/dishes";
 import { SITE_URL } from "@/lib/site";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 export const metadata = {
   title: "Menu",
@@ -21,7 +21,7 @@ export default async function MenuPage({ searchParams }) {
   const sp = await searchParams;
   const page = Math.max(1, Number(sp?.page ?? 1));
 
-  const all = await getDishes();
+  const all = await getActiveDishes();
   const total = all.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -48,9 +48,9 @@ export default async function MenuPage({ searchParams }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
       />
 
-      <header className="space-y-2">
+      <header className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Menu</h1>
-        <p className="text-stone-600">Search, filter, and page through.</p>
+        {/* <p className="text-stone-600">Search, filter, and page through.</p> */}
       </header>
 
       <MenuBrowser

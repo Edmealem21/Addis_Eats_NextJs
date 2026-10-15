@@ -18,7 +18,7 @@ export default function CheckoutForm() {
 
   if (state?.ok) {
     return (
-      <div className="max-w-md space-y-4 rounded-lg border border-green-300 bg-green-50 p-6">
+      <div className="mx-auto max-w-md space-y-4 rounded-2xl border border-green-300 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-green-800">Order placed ✓</h2>
         <p className="text-green-700">Thank you. We&apos;ll call you to confirm.</p>
         <dl className="space-y-1 text-sm">
@@ -42,7 +42,11 @@ export default function CheckoutForm() {
   }
 
   return (
-    <form action={formAction} onSubmit={handleSubmit} className="max-w-md space-y-4">
+    <form
+      action={formAction}
+      onSubmit={handleSubmit}
+      className="mx-auto max-w-md space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"
+    >
       <input
         type="hidden"
         name="items"

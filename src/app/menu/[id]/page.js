@@ -65,12 +65,13 @@ export default async function DishPage({ params }) {
   };
 
   return (
-    <article className="space-y-6">
+    <article className="mx-auto max-w-2xl space-y-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* Hero image — smaller, centered */}
       <div className="relative mx-auto aspect-[16/9] max-w-md overflow-hidden rounded-lg bg-stone-100">
         <Image
           src={dish.image}
@@ -83,17 +84,22 @@ export default async function DishPage({ params }) {
         />
       </div>
 
-      <header className="space-y-1">
+      {/* Header — centered text */}
+      <header className="space-y-1 text-center">
         <p className="text-xs uppercase tracking-wide text-stone-500">{dish.category}</p>
         <h1 className="text-3xl font-bold">{dish.name}</h1>
         <p className="text-xl font-medium text-amber-700">{dish.price} ETB</p>
       </header>
 
-      <p className="text-stone-700">{dish.description}</p>
+      {/* Description — centered text */}
+      <p className="text-center text-stone-700">{dish.description}</p>
 
-      <div className="flex items-center gap-4">
+      {/* Buttons — centered row */}
+      <div className="flex flex-wrap items-center justify-center gap-4">
         <AddToCartButton dish={dish} />
-        <Link href="/menu" className="text-amber-700 underline">← Back to menu</Link>
+        <Link href="/menu" className="text-amber-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+          ← Back to menu
+        </Link>
       </div>
     </article>
   );

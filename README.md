@@ -6,11 +6,25 @@ A full-stack Ethiopian food-ordering app built on the Next.js App Router.
 
 ## What it does
 
-- Browse the menu — search, filter, and page through dishes
-- Add dishes to a cart, place an order with a validated form
-- Track an order in real time on a map with live status updates
-- Staff dashboard with revenue and order charts
+Customers browse the menu, add dishes to a cart, place a validated order,
+and track their delivery live on a map. Staff manage the catalog, orders,
+and users from an admin panel.
+
+## Features
+
+- Menu with search, category filter, and paging
+- Favorites (persisted in the browser)
+- Cart with quantity controls
+- Checkout validated by a shared zod schema
+- Order history with live status updates (SSE)
+- Delivery tracking map with a moving courier
 - CSV export of order history
+- Admin panel: dishes, orders, users
+- Staff-only routes protected by session + role checks
+- HMAC-signed httpOnly session cookies
+- Self-hosted fonts, `next/image`, `next/script`
+- Full metadata, JSON-LD, sitemap, robots, OG images
+- Keyboard navigation: skip link, focus rings, arrow keys, help panel
 
 ## Tech stack
 
@@ -21,22 +35,18 @@ A full-stack Ethiopian food-ordering app built on the Next.js App Router.
 | Data | SWR, Zod |
 | Backend | Route Handlers + Server Actions |
 | Auth | HMAC-signed httpOnly cookies |
-| Maps | Leaflet, react-leaflet |
+| Maps | Leaflet + react-leaflet |
 | Images | `next/image` with AVIF/WebP |
 
 ## Run locally
 
 ```bash
-# 1. Clone
 git clone https://github.com/IBT-Qiyas-Full-Stack-Academy/sq6-edmealem-getnet
-cd <repo>
-
-# 2. Copy env and edit
+cd <your-repo>
 cp .env.example .env.local
-#   SESSION_SECRET: any long random string
+# Edit .env.local:
+#   SESSION_SECRET=... (any long random string)
 #     generate: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
-#   NEXT_PUBLIC_SITE_URL: http://localhost:3000
-
-# 3. Install and run
+#   NEXT_PUBLIC_SITE_URL=http://localhost:3000
 npm install
 npm run dev

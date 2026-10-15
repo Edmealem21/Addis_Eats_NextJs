@@ -20,19 +20,23 @@ export default async function OrderPage({ params }) {
   if (!order) notFound();
   if (order.userId !== session.userId) notFound();
 
-  return (
-    <section className="space-y-6">
-      <header className="space-y-1">
-        <p className="text-xs uppercase tracking-wide text-stone-500">Order</p>
-        <h1 className="font-mono text-2xl font-bold">{order.id}</h1>
-      </header>
+return (
+  <section className="mx-auto max-w-md space-y-6">
+    <header className="space-y-1 text-center">
+      <p className="text-xs uppercase tracking-wide text-stone-500">Order</p>
+      <h1 className="font-mono text-2xl font-bold">{order.id}</h1>
+    </header>
 
-      <OrderStatus id={id} fallbackData={{ order }} />
+    <OrderStatus id={id} fallbackData={{ order }} />
 
-      <div className="flex gap-4">
-        <Link href="/orders" className="text-amber-700 underline">← My orders</Link>
-        <Link href="/menu" className="text-amber-700 underline">Menu</Link>
-      </div>
-    </section>
-  );
+    <div className="flex justify-center gap-4">
+      <Link href="/orders" className="text-amber-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+        ← My orders
+      </Link>
+      <Link href="/menu" className="text-amber-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+        Menu
+      </Link>
+    </div>
+  </section>
+);
 }

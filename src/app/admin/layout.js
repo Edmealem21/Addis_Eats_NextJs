@@ -10,10 +10,10 @@ export default async function AdminLayout({ children }) {
   if (!session) redirect("/signin?next=/admin");
   if (session.role !== "staff") redirect("/");
 
-  return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-[#F5F0EC]">
-      <Sidebar user={session} />
-      <main className="flex-1 px-8 py-8">{children}</main>
-    </div>
-  );
+return (
+  <div className="-mx-6 -my-8 flex min-h-[calc(100vh-4rem)] bg-[#F5F0EC] sm:-mx-10 lg:-mx-16">
+    <Sidebar user={session} />
+    <main className="flex-1 p-6 lg:p-8">{children}</main>
+  </div>
+);
 }

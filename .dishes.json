@@ -82,9 +82,31 @@
     "category": "Burgers",
     "price": 380,
     "rating": 4.7,
-    "description": "Double beef patty, cheese, and special sauce.",
-    "image": "/dishes/tibs.jpg",
+    "description": "Double beef patty, cheese, and our signature special sauce.",
+    "image": "/dishes/burger.jpg",
     "featured": true,
+    "active": true
+  },
+  {
+    "id": "classic-burger",
+    "name": "Classic Beef Burger",
+    "category": "Burgers",
+    "price": 320,
+    "rating": 4.5,
+    "description": "Juicy beef patty, lettuce, tomato, and pickles on a soft bun.",
+    "image": "/dishes/classic-burger.jpg",
+    "featured": false,
+    "active": true
+  },
+  {
+    "id": "chicken-burger",
+    "name": "Crispy Chicken Burger",
+    "category": "Burgers",
+    "price": 350,
+    "rating": 4.6,
+    "description": "Breaded chicken fillet, coleslaw, and garlic aioli.",
+    "image": "/dishes/chicken-burger.jpg",
+    "featured": false,
     "active": true
   },
   {
@@ -94,8 +116,30 @@
     "price": 80,
     "rating": 5,
     "description": "Buna brewed in a clay jebena, served in small cups.",
-    "image": "/dishes/shiro.jpg",
+    "image": "/dishes/coffee.jpg",
     "featured": true,
+    "active": true
+  },
+  {
+    "id": "macchiato",
+    "name": "Ethiopian Macchiato",
+    "category": "Drinks",
+    "price": 90,
+    "rating": 4.8,
+    "description": "Rich espresso with a touch of steamed milk — a local favorite.",
+    "image": "/dishes/macchiato.jpg",
+    "featured": false,
+    "active": true
+  },
+  {
+    "id": "spris",
+    "name": "Fresh Spris Juice",
+    "category": "Drinks",
+    "price": 150,
+    "rating": 4.7,
+    "description": "Layered avocado and mango juice, blended fresh to order.",
+    "image": "/dishes/juice.jpg",
+    "featured": false,
     "active": true
   }
 ]

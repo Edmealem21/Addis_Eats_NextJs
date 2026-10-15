@@ -9,6 +9,9 @@ import MobileNav from "@/components/MobileNav";
 import AnalyticsScript from "@/components/AnalyticsScript";
 import { getSession } from "@/lib/session";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import ArrowNav from "@/components/ArrowNav";
+import FavoritesProvider from "@/components/FavoritesProvider";
+import FavoritesLink from "@/components/FavoritesLink";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -64,58 +67,67 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
       <body className={`${inter.className} min-h-screen bg-stone-50 text-stone-900 flex flex-col`}>
+         <ArrowNav />
+        <FavoritesProvider>
         <Providers>
-          <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-<div className="flex items-center justify-between gap-6 px-6 py-4">
-  {/* ── LEFT: logo ── */}
-  <Link
-    href="/"
-    className="shrink-0 font-bold text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-  >
-    Addis Eats
-  </Link>
+                      <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
+            <div className="flex items-center justify-between gap-6 px-6 py-4">
+              {/* ── LEFT: logo ── */}
+              <Link
+                href="/"
+                className="shrink-0 font-bold text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+              >
+                Addis Eats
+              </Link>
 
-  {/* ── CENTER: nav takes all remaining space, centers its contents ── */}
-  <nav className="hidden flex-1 items-center justify-center gap-6 md:flex">
-    <Link href="/menu" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-      Menu
-    </Link>
-    <CartButton />
-    <Link href="/orders" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-      My Orders
-    </Link>
-    <Link href="/checkout" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-      Checkout
-    </Link>
-    <Link href="/admin" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-      Admin
-    </Link>
-    {session?.role === "staff" && (
-      <Link href="/kitchen" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-        Kitchen
-      </Link>
-    )}
-  </nav>
+              {/* ── CENTER: nav takes all remaining space, centers its contents ── */}
+              <nav className="hidden flex-1 items-center justify-center gap-6 md:flex">
+                <Link href="/menu" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                  Menu
+                </Link>
+                <CartButton />
+                <FavoritesLink />
+                <Link href="/orders" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                  My Orders
+                </Link>
+                <Link href="/checkout" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                  Checkout
+                </Link>
+                <Link href="/admin" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                  Admin
+                </Link>
+                {session?.role === "staff" && (
+                  <Link href="/kitchen" className="hover:text-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                    Kitchen
+                  </Link>
+                )}
+              </nav>
 
-  {/* ── RIGHT: sign in/out + mobile nav ── */}
-  <div className="flex shrink-0 items-center justify-end gap-3">
-    <div className="hidden md:block">
-      {session ? (
-        <SignOutButton />
-      ) : (
-        <Link href="/signin" className="text-amber-700">
-          Sign in
-        </Link>
-      )}
-    </div>
-    <MobileNav session={session} />
-  </div>
-</div>
+              {/* ── RIGHT: sign in/out + mobile nav ── */}
+              <div className="flex shrink-0 items-center justify-end gap-3">
+                <div className="hidden md:block">
+                  {session ? (
+                    <SignOutButton />
+                  ) : (
+                    <Link href="/signin" className="text-amber-700">
+                      Sign in
+                    </Link>
+                  )}
+                </div>
+                <MobileNav session={session} />
+              </div>
+            </div>
           </header>
 
-          <main className="mx-auto w-full  flex-1 px-4 py-8">
+          <main className="mx-auto w-full flex-1 bg-stone-100 px-6 py-8 sm:px-10 lg:px-16">
             {children}
           </main>
+          {/* <main className="w-full flex-1 bg-stone-100">
+            <div className="mx-auto max-w-6xl px-6 py-8 sm:px-10 lg:px-16">
+              {children}
+            </div>
+          </main> */}
+
 
           <footer className="border-t bg-white">
             <div className="mx-auto px-4 py-6 text-sm text-stone-500">
@@ -123,7 +135,7 @@ export default async function RootLayout({ children }) {
             </div>
           </footer>
         </Providers>
-
+       </FavoritesProvider>
         <AnalyticsScript />
       </body>
     </html>

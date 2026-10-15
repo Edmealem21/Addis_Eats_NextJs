@@ -1,5 +1,6 @@
 // src/components/CartContext.jsx
 "use client";
+
 import { createContext, useContext } from "react";
 
 export const CartStateContext = createContext(null);

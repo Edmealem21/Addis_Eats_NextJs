@@ -21,15 +21,15 @@ export default function OrderTable({
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full text-left text-sm">
+return (
+  <div className="space-y-4">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+      <table className="w-full text-left text-sm">
           <caption className="sr-only">
             All orders, sorted by {sort} {dir === "asc" ? "ascending" : "descending"}
           </caption>
 
-          <thead className="bg-stone-50">
+          <thead className="bg-white ">
             <tr>
               <Th field="id" sort={sort} dir={dir}>Order</Th>
               <Th field="name" sort={sort} dir={dir}>Customer</Th>
@@ -42,7 +42,10 @@ export default function OrderTable({
 
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="border-t hover:bg-stone-50">
+              <tr
+                key={o.id}
+                className="border-t border-stone-200/70 transition hover:bg-white/70"
+              >
                 <td className="px-4 py-3 font-mono text-xs">
                   <Link href={`/track/${o.id}`} className="hover:text-amber-700">
                     {o.id}

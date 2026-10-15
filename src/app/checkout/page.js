@@ -12,13 +12,15 @@ export default async function CheckoutPage() {
   const session = await getSession();
   if (!session) redirect("/signin?next=/checkout");
 
-  return (
-    <section className="space-y-6">
+ return (
+  <section className="mx-auto max-w-md space-y-6">
+    <header className="text-center">
       <h1 className="text-2xl font-bold">Checkout</h1>
-      <p className="text-sm text-stone-500">
+      <p className="mt-1 text-sm text-stone-500">
         Signed in as <strong>{session.userId}</strong>
       </p>
-      <CheckoutForm />
-    </section>
-  );
+    </header>
+    <CheckoutForm />
+  </section>
+);
 }

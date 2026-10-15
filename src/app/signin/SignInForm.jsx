@@ -18,16 +18,26 @@ export default function SignInForm({ next }) {
 
       <div>
         <label className="block text-sm font-medium" htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" required autoComplete="email"
-          defaultValue="almaz@example.com"
-          className="mt-1 w-full rounded border px-3 py-2" />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            className="mt-1 min-h-[44px] w-full rounded border border-stone-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          />
       </div>
 
       <div>
         <label className="block text-sm font-medium" htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" required
-          autoComplete="current-password" defaultValue="password1"
-          className="mt-1 w-full rounded border px-3 py-2" />
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            className="mt-1 min-h-[44px] w-full rounded border border-stone-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          />
       </div>
 
       <button type="submit" disabled={pending}
