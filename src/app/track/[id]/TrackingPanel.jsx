@@ -1,4 +1,7 @@
+// src/app/track/[id]/TrackingPanel.jsx
 "use client";
+
+import { useEffect, useState } from "react";
 import { relative } from "@/lib/format";
 
 const STATUS_LABELS = {
@@ -12,11 +15,20 @@ export default function TrackingPanel({
   status,
   connection,
   lastEventAt,
-  now,
   restaurant,
   delivery,
   address,
 }) {
+  // 1. Use a mounted state to prevent SSR hydration mismatches for time
+  const [mounted, setMounted] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    setMounted(true);
+    const timer = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   const stepIndex = Object.keys(STATUS_LABELS).indexOf(status);
 
   return (
@@ -43,7 +55,9 @@ export default function TrackingPanel({
                 ? "Stream closed"
                 : "Connection lost"}
         </span>
-        {lastEventAt && (
+        
+        {/* 2. Only render time AFTER mount to avoid mismatch */}
+        {mounted && lastEventAt && (
           <span className="text-xs text-stone-400">
             · updated {relative(lastEventAt, now)}
           </span>
@@ -73,7 +87,7 @@ export default function TrackingPanel({
         })}
       </ol>
 
-      {/* Text equivalent of the map */}
+      {/* Text equivalent of map */}
       <div className="space-y-2 rounded-lg border bg-white p-4 text-sm">
         <h3 className="font-semibold">Delivery details</h3>
         <dl className="space-y-1">
@@ -86,8 +100,7 @@ export default function TrackingPanel({
           </Row>
         </dl>
         <p className="text-xs text-stone-500">
-          The map shows the courier 🚗 approaching your address as the status
-          updates.
+          The map shows the courier 🚗 approaching your address as the status updates.
         </p>
       </div>
     </div>

@@ -1,79 +1,68 @@
 // src/lib/orders.js
-import fs from "fs";
-import path from "path";
+import { kv } from "@vercel/kv";
 
-const FILE = path.join(process.cwd(), ".orders.json");
-
-function readOrders() {
-  try {
-    if (!fs.existsSync(FILE)) return {};
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
-function writeOrders(data) {
-  try {
-    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-  } catch {}
-}
-
-export function addOrder(order) {
-  const all = readOrders();
-  all[order.id] = order;
-  writeOrders(all);
+export async function addOrder(order) {
+  await kv.set(`order:${order.id}`, order);
+  const ts = new Date(order.createdAt).getTime();
+  await kv.zadd(`user:${order.userId}:orders`, { score: ts, member: order.id });
+  await kv.zadd("orders:all", { score: ts, member: order.id });
   return order;
 }
 
-export function getOrder(id) {
-  return readOrders()[id] ?? null;
+export async function getOrder(id) {
+  return (await kv.get(`order:${id}`)) ?? null;
 }
 
-export function deleteOrder(id) {
-  const all = readOrders();
-  const existed = id in all;
-  delete all[id];
-  writeOrders(all);
-  return existed;
+export async function deleteOrder(id) {
+  const order = await kv.get(`order:${id}`);
+  if (!order) return false;
+  await kv.del(`order:${id}`);
+  await kv.zrem(`user:${order.userId}:orders`, id);
+  await kv.zrem("orders:all", id);
+  return true;
 }
 
 export function newOrderId() {
   return "ord_" + Math.random().toString(36).slice(2, 10);
 }
 
-export function listOrdersForUser(userId) {
-  return Object.values(readOrders()).filter((o) => o.userId === userId);
+export async function listOrdersForUser(userId) {
+  const ids = await kv.zrange(`user:${userId}:orders`, 0, -1, { rev: true });
+  if (!ids || ids.length === 0) return [];
+  const orders = await Promise.all(ids.map((id) => kv.get(`order:${id}`)));
+  return orders.filter(Boolean);
 }
 
-export function listAllOrders() {
-  return Object.values(readOrders());
+export async function listAllOrders() {
+  const ids = await kv.zrange("orders:all", 0, -1, { rev: true });
+  if (!ids || ids.length === 0) return [];
+  const orders = await Promise.all(ids.map((id) => kv.get(`order:${id}`)));
+  return orders.filter(Boolean);
 }
 
-export function updateOrderStatus(id, status) {
-  const all = readOrders();
-  if (!all[id]) return false;
-  all[id].status = status;
-  writeOrders(all);
+export async function updateOrderStatus(id, status) {
+  const order = await kv.get(`order:${id}`);
+  if (!order) return false;
+  await kv.set(`order:${id}`, { ...order, status });
   return true;
 }
 
-export function sumTotals(predicate = () => true) {
-  return listAllOrders().filter(predicate).reduce((s, o) => s + (o.total ?? 0), 0);
+export async function sumTotals(predicate = () => true) {
+  return (await listAllOrders()).filter(predicate).reduce((s, o) => s + (o.total ?? 0), 0);
 }
 
-export function revenueBy(keyFn) {
+export async function revenueBy(keyFn) {
   const groups = new Map();
-  for (const o of listAllOrders()) {
+  for (const o of await listAllOrders()) {
     const key = keyFn(o);
     groups.set(key, (groups.get(key) ?? 0) + (o.total ?? 0));
   }
   return Array.from(groups, ([key, value]) => ({ key, value }));
 }
 
-export function countBy(keyFn) {
+export async function countBy(keyFn) {
   const groups = new Map();
-  for (const o of listAllOrders()) {
+  for (const o of await listAllOrders()) {
     const key = keyFn(o);
     groups.set(key, (groups.get(key) ?? 0) + 1);
   }

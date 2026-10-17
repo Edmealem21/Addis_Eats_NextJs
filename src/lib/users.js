@@ -1,8 +1,5 @@
 // src/lib/users.js
-import fs from "fs";
-import path from "path";
-
-const FILE = path.join(process.cwd(), ".users.json");
+import { kv } from "@vercel/kv";
 
 const DEFAULTS = [
   { id: "user-1", email: "almaz@example.com", password: "password1", name: "Almaz", role: "customer", active: true },
@@ -10,52 +7,42 @@ const DEFAULTS = [
   { id: "staff-1", email: "chef@addiseats.com", password: "kitchen1", name: "Chef Selam", role: "staff", active: true },
 ];
 
-function read() {
-  try {
-    if (!fs.existsSync(FILE)) {
-      fs.writeFileSync(FILE, JSON.stringify(DEFAULTS, null, 2));
-      return DEFAULTS;
-    }
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return DEFAULTS;
+async function readUsers() {
+  let list = await kv.get("users:all");
+  if (!list) {
+    await kv.set("users:all", DEFAULTS);
+    list = DEFAULTS;
   }
+  return list;
 }
 
-function write(list) {
-  try {
-    fs.writeFileSync(FILE, JSON.stringify(list, null, 2));
-  } catch {}
+export async function getUsers() {
+  return await readUsers();
 }
 
-// All of these are synchronous — plain functions, not async.
-export function getUsers() {
-  return read();
-}
-
-export function findUserByCredentials(email, password) {
-  const u = read().find(
-    (x) => x.email === email && x.password === password
-  );
+export async function findUserByCredentials(email, password) {
+  const list = await readUsers();
+  const u = list.find((x) => x.email === email && x.password === password);
   if (!u || u.active === false) return null;
   return u;
 }
 
-export function findUserById(id) {
-  return read().find((u) => u.id === id) ?? null;
+export async function findUserById(id) {
+  const list = await readUsers();
+  return list.find((u) => u.id === id) ?? null;
 }
 
-export function toggleUserActive(id) {
-  const list = read();
+export async function toggleUserActive(id) {
+  const list = await readUsers();
   const idx = list.findIndex((u) => u.id === id);
   if (idx === -1) return null;
   list[idx].active = !list[idx].active;
-  write(list);
+  await kv.set("users:all", list);
   return list[idx];
 }
 
-export function createUser({ email, password, name, role }) {
-  const list = read();
+export async function createUser({ email, password, name, role }) {
+  const list = await readUsers();
   const normalizedEmail = String(email).toLowerCase().trim();
   if (list.some((u) => u.email.toLowerCase() === normalizedEmail)) {
     throw new Error(`A user with email "${email}" already exists.`);
@@ -69,17 +56,16 @@ export function createUser({ email, password, name, role }) {
     active: true,
   };
   list.push(user);
-  write(list);
+  await kv.set("users:all", list);
   return user;
 }
 
-export function deleteUser(id) {
-  const list = read();
+export async function deleteUser(id) {
+  const list = await readUsers();
   const next = list.filter((u) => u.id !== id);
   if (next.length === list.length) return false;
-  write(next);
+  await kv.set("users:all", next);
   return true;
 }
 
-// Kept for backwards compatibility with older imports.
-export const users = DEFAULTS;
+export const users = DEFAULTS; // Backwards compat fallback

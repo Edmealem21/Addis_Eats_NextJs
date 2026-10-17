@@ -21,7 +21,9 @@ export async function signInAction(_prevState, formData) {
   const password = String(formData.get("password") ?? "");
   const next = safeNext(String(formData.get("next") ?? "/"));
 
-  const user = findUserByCredentials(email, password);
+  // MUST AWAIT this! It queries Vercel KV now.
+  const user = await findUserByCredentials(email, password);
+  
   if (!user) return { ok: false, error: "Invalid email or password." };
 
   await createSession({ userId: user.id, role: user.role });
@@ -59,31 +61,29 @@ export async function placeOrder(_prevState, formData) {
     };
   }
 
- // update 
-const total = (
-  await Promise.all(
-    parsed.data.items.map(async (i) => {
-      const dish = await getDish(i.id);
-      const unitPrice = dish?.price ?? 0;
-      return unitPrice * i.quantity;
-    })
-  )
-).reduce((sum, n) => sum + n, 0);
+  const total = (
+    await Promise.all(
+      parsed.data.items.map(async (i) => {
+        const dish = await getDish(i.id);
+        const unitPrice = dish?.price ?? 0;
+        return unitPrice * i.quantity;
+      })
+    )
+  ).reduce((sum, n) => sum + n, 0);
 
-// Derive a neighbourhood label from the address (first comma-separated part).
-const addr = String(parsed.data.address ?? "");
-const neighbourhood =
-  addr.split(",")[0].trim() || "Unknown";
+  const addr = String(parsed.data.address ?? "");
+  const neighbourhood = addr.split(",")[0].trim() || "Unknown";
 
-const order = addOrder({
-  id: newOrderId(),
-  userId: session.userId,
-  createdAt: new Date().toISOString(),
-  status: "pending",
-  total,
-  neighbourhood,
-  ...parsed.data,
-});
+  // MUST AWAIT this! It writes to Vercel KV now.
+  const order = await addOrder({
+    id: newOrderId(),
+    userId: session.userId,
+    createdAt: new Date().toISOString(),
+    status: "pending",
+    total,
+    neighbourhood,
+    ...parsed.data,
+  });
 
   revalidatePath("/checkout");
   revalidatePath("/orders");
@@ -95,13 +95,16 @@ export async function cancelOrder(_prevState, formData) {
   if (!session) return { ok: false, error: "Please sign in." };
 
   const orderId = String(formData.get("orderId") ?? "");
-  const order = getOrder(orderId);
+  
+  // MUST AWAIT these!
+  const order = await getOrder(orderId);
   if (!order) return { ok: false, error: "Order not found." };
+  
   if (order.userId !== session.userId) {
     return { ok: false, error: "You don't own this order." };
   }
 
-  deleteOrder(orderId);
+  await deleteOrder(orderId);
   revalidatePath("/orders");
   return { ok: true };
 }

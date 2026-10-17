@@ -6,8 +6,8 @@ import DeleteUserButton from "./DeleteUserButton";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminUsersPage() {
-  const users = getUsers();
+export default async function AdminUsersPage() {
+ const users = await getUsers(); // Change from sync to async if needed
 
   return (
     <div className="space-y-6">

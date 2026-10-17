@@ -1,11 +1,7 @@
 // src/lib/dishes.js
-import fs from "fs";
-import path from "path";
-
-const FILE = path.join(process.cwd(), ".dishes.json");
+import { kv } from "@vercel/kv";
 
 const DEFAULTS = [
-  // ── Ethiopian ─────────────────────────────
   { id: "doro-wat", name: "Doro Wat", category: "Ethiopian", price: 520, rating: 4.9,
     description: "Slow-simmered chicken in berbere and niter kibbeh, served with injera.",
     image: "/dishes/doro-wat.jpg", featured: true, active: true },
@@ -27,8 +23,6 @@ const DEFAULTS = [
   { id: "firfir", name: "Firfir", category: "Ethiopian", price: 290, rating: 4.4,
     description: "Shredded injera tossed in spicy berbere sauce.",
     image: "/dishes/firfir.jpg", featured: false, active: true },
-
-  // ── Burgers ───────────────────────────────
   { id: "burger", name: "Addis Tower Burger", category: "Burgers", price: 380, rating: 4.7,
     description: "Double beef patty, cheese, and our signature special sauce.",
     image: "/dishes/burger.jpg", featured: true, active: true },
@@ -38,8 +32,6 @@ const DEFAULTS = [
   { id: "chicken-burger", name: "Crispy Chicken Burger", category: "Burgers", price: 350, rating: 4.6,
     description: "Breaded chicken fillet, coleslaw, and garlic aioli.",
     image: "/dishes/chicken-burger.jpg", featured: false, active: true },
-
-  // ── Drinks ────────────────────────────────
   { id: "coffee", name: "Traditional Jebena Coffee", category: "Drinks", price: 80, rating: 5.0,
     description: "Buna brewed in a clay jebena, served in small cups.",
     image: "/dishes/coffee.jpg", featured: true, active: true },
@@ -51,63 +43,69 @@ const DEFAULTS = [
     image: "/dishes/juice.jpg", featured: false, active: true },
 ];
 
-function read() {
-  try {
-    if (!fs.existsSync(FILE)) {
-      fs.writeFileSync(FILE, JSON.stringify(DEFAULTS, null, 2));
-      return DEFAULTS;
-    }
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return DEFAULTS;
+// Helper to read dishes from KV, seeding with DEFAULTS if empty
+async function readDishes() {
+  let list = await kv.get("dishes:all");
+  if (!list) {
+    await kv.set("dishes:all", DEFAULTS);
+    list = DEFAULTS;
   }
+  return list;
 }
 
-function write(list) {
-  try { fs.writeFileSync(FILE, JSON.stringify(list, null, 2)); } catch {}
+export async function getDishes() {
+  return await readDishes();
 }
 
-export async function getDishes() { return read(); }
-export async function getActiveDishes() { return read().filter((d) => d.active !== false); }
-export async function getDish(id) { return read().find((d) => d.id === id) ?? null; }
+export async function getActiveDishes() {
+  const list = await readDishes();
+  return list.filter((d) => d.active !== false);
+}
+
+export async function getDish(id) {
+  const list = await readDishes();
+  return list.find((d) => d.id === id) ?? null;
+}
 
 export async function createDish(dish) {
-  const list = read();
-  if (list.some((d) => d.id === dish.id)) throw new Error(`A dish with id "${dish.id}" already exists.`);
+  const list = await readDishes();
+  if (list.some((d) => d.id === dish.id)) {
+    throw new Error(`A dish with id "${dish.id}" already exists.`);
+  }
   list.push(dish);
-  write(list);
+  await kv.set("dishes:all", list);
   return dish;
 }
 
 export async function updateDish(id, patch) {
-  const list = read();
+  const list = await readDishes();
   const idx = list.findIndex((d) => d.id === id);
   if (idx === -1) throw new Error(`Dish "${id}" not found.`);
   list[idx] = { ...list[idx], ...patch, id };
-  write(list);
+  await kv.set("dishes:all", list);
   return list[idx];
 }
 
 export async function deleteDish(id) {
-  const list = read();
+  const list = await readDishes();
   const next = list.filter((d) => d.id !== id);
   if (next.length === list.length) return false;
-  write(next);
+  await kv.set("dishes:all", next);
   return true;
 }
 
 export async function toggleDishActive(id) {
-  const list = read();
+  const list = await readDishes();
   const idx = list.findIndex((d) => d.id === id);
   if (idx === -1) return null;
   list[idx].active = !list[idx].active;
-  write(list);
+  await kv.set("dishes:all", list);
   return list[idx];
 }
 
 export async function resetDishes() {
-  write(DEFAULTS);
+  await kv.set("dishes:all", DEFAULTS);
   return DEFAULTS;
 }
 
-export const dishes = DEFAULTS;
+export const dishes = DEFAULTS; // Backwards compat fallback

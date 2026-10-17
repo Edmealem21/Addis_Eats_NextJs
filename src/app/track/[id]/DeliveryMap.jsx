@@ -99,10 +99,7 @@ export default function DeliveryMap({
 
   if (!icons) {
     return (
-      <div
-        style={{ height: 360 }}
-        className="grid place-items-center rounded-lg border bg-stone-100 text-sm text-stone-500"
-      >
+      <div style={{ height: 450 }} className="overflow-hidden rounded-lg border bg-stone-100">
         Loading map…
       </div>
     );

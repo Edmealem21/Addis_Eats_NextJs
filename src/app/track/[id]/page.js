@@ -1,3 +1,4 @@
+// src/app/track/[id]/page.js
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
@@ -14,24 +15,30 @@ export const metadata = {
 export default async function TrackPage({ params }) {
   const { id } = await params;
 
+  // 1. Verify the user is signed in
   const session = await getSession();
   if (!session) redirect(`/signin?next=/track/${id}`);
 
-  const order = getOrder(id);
+  // 2. MUST AWAIT THIS! Otherwise it returns a Promise and crashes.
+  const order = await getOrder(id); 
+  
+  // 3. Check if the order exists
   if (!order) notFound();
+  
+  // 4. Check if the user owns this order
   if (order.userId !== session.userId) notFound();
 
   const { restaurant, delivery } = coordsFor(order.neighbourhood);
 
   return (
-    <section className="space-y-8">
-      <header className="space-y-1">
+    <section className="mx-auto max-w-4xl space-y-6">
+      <header className="space-y-1 text-center">
         <p className="text-xs uppercase tracking-wide text-stone-500">
           Tracking
         </p>
         <h1 className="font-mono text-2xl font-bold">{order.id}</h1>
         <p className="text-stone-600">
-          Placed {when(order.createdAt)} · {etb(order.total)}
+          Placed {when(order.createdAt)} · {etb(order.total ?? 0)}
         </p>
       </header>
 
@@ -44,7 +51,7 @@ export default async function TrackPage({ params }) {
         address={order.address}
       />
 
-      <div className="flex gap-4">
+      <div className="flex justify-center gap-4">
         <Link href="/orders" className="text-amber-700 underline">
           ← My orders
         </Link>
